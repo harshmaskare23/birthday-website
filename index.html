@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Journey for You | Happy Birthday</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0c;
+            --accent: #e2b0ff;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
+            --text: #f0f0f0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* --- Background Particles --- */
+        #canvas-stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #0a0a0c 100%);
+        }
+
+        /* --- Smooth Scroll Sections --- */
+        section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        /* --- Typography --- */
+        h1, h2 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, #fff, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .fade-in { opacity: 0; transform: translateY(30px); transition: all 1s ease-out; }
+        .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+        /* --- Section 1: The Gate --- */
+        #hero { z-index: 10; }
+        .btn-start {
+            padding: 1rem 2.5rem;
+            border: 1px solid var(--border);
+            background: var(--glass);
+            color: white;
+            border-radius: 50px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: 0.3s;
+            text-decoration: none;
+            margin-top: 2rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+        .btn-start:hover { background: white; color: black; }
+
+        /* --- Section 2: The Letter --- */
+        .glass-card {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(15px);
+            padding: 3rem;
+            border-radius: 24px;
+            max-width: 600px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        /* --- Section 3: Interactive Gift --- */
+        .gift-box {
+            width: 150px;
+            height: 150px;
+            background: var(--accent);
+            position: relative;
+            cursor: pointer;
+            border-radius: 12px;
+            box-shadow: 0 0 30px rgba(226, 176, 255, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .gift-box:hover { transform: scale(1.1) rotate(5deg); }
+        .gift-box::after { content: '🎁'; font-size: 4rem; }
+
+        #final-msg {
+            display: none;
+            margin-top: 2rem;
+            font-style: italic;
+        }
+
+        /* --- Scroll Progress --- */
+        #progress {
+            position: fixed;
+            top: 0; left: 0;
+            height: 4px;
+            background: var(--accent);
+            width: 0%;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="progress"></div>
+    <canvas id="canvas-stars"></canvas>
+
+    <section id="hero">
+        <h1 style="font-size: clamp(3rem, 10vw, 6rem);">Hello, Someone Special.</h1>
+        <p class="fade-in">Today is a significant rotation of the earth.</p>
+        <a href="#message" class="btn-start">Enter the Experience</a>
+    </section>
+
+    <section id="message">
+        <div class="glass-card fade-in">
+            <h2>To You.</h2>
+            <p>In a world of billions, somehow our paths crossed. Whether it's your laugh, the way you think, or just your presence—you make the "everyday" feel like a masterpiece. This year, my wish for you is simple: more of everything that makes you feel alive.</p>
+            <br>
+            <p style="font-size: 0.9rem; opacity: 0.7;">Keep scrolling, there's a little something left.</p>
+        </div>
+    </section>
+
+    <section id="gift">
+        <h2 class="fade-in">A Tiny Digital Gift</h2>
+        <div class="gift-box fade-in" onclick="openGift()"></div>
+        <div id="final-msg">
+            <h1 style="color: var(--accent);">Happy Birthday!</h1>
+            <p>You are loved. More than words can fit in a single webpage.</p>
+        </div>
+    </section>
+
+    <script>
+        // --- Starfield Logic ---
+        const canvas = document.getElementById('canvas-stars');
+        const ctx = canvas.getContext('2d');
+        let stars = [];
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        class Star {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 1.5;
+                this.speed = Math.random() * 0.5;
+            }
+            update() {
+                this.y -= this.speed;
+                if (this.y < 0) this.y = canvas.height;
+            }
+            draw() {
+                ctx.fillStyle = "white";
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initStars() {
+            stars = [];
+            for (let i = 0; i < 200; i++) stars.push(new Star());
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            stars.forEach(s => { s.update(); s.draw(); });
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+        initStars();
+        animate();
+
+        // --- Intersection Observer for Fades ---
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('visible');
+            });
+        }, { threshold: 0.2 });
+
+        document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+        // --- Scroll Progress Bar ---
+        window.onscroll = () => {
+            let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            let scrolled = (winScroll / height) * 100;
+            document.getElementById("progress").style.width = scrolled + "%";
+        };
+
+        // --- Interactive Gift Logic ---
+        function openGift() {
+            const box = document.querySelector('.gift-box');
+            box.style.transform = "scale(0) rotate(720deg)";
+            setTimeout(() => {
+                box.style.display = 'none';
+                const msg = document.getElementById('final-msg');
+                msg.style.display = 'block';
+                msg.classList.add('fade-in', 'visible');
+                createConfetti();
+            }, 500);
+        }
+
+        function createConfetti() {
+            for(let i=0; i<50; i++) {
+                const div = document.createElement('div');
+                div.style.position = 'fixed';
+                div.style.left = Math.random() * 100 + 'vw';
+                div.style.top = '-10px';
+                div.style.width = '10px';
+                div.style.height = '10px';
+                div.style.backgroundColor = ['#e2b0ff','#fff','#ffb0b0'][Math.floor(Math.random()*3)];
+                div.style.borderRadius = '50%';
+                div.style.zIndex = '1000';
+                document.body.appendChild(div);
+
+                const animation = div.animate([
+                    { transform: 'translateY(0) rotate(0)', opacity: 1 },
+                    { transform: `translateY(100vh) rotate(${Math.random() * 360}deg)`, opacity: 0 }
+                ], { duration: 2000 + Math.random() * 3000, iterations: 1 });
+
+                animation.onfinish = () => div.remove();
+            }
+        }
+    </script>
+</body>
+</html>
